@@ -6,7 +6,7 @@ from utils import get_image_description
 
 # Function to calculate relevance between news text and image description using GPT-4o
 def calculate_relevance(client, news_text, image_description):
-    prompt = f"Given the news text: '{news_text}', rate the relevance of the following image description on a scale from 0 to 1. Image description: '{image_description}'"
+    prompt = f"Given the news text: '{news_text}', rate the relevance of the following image description on a scale from 0 to 1. Only respond with a number between 0 and 1 without any additional text. Image description: '{image_description}'"
     
     response = client.chat.completions.create(
         model="gpt-4o",
@@ -17,7 +17,14 @@ def calculate_relevance(client, news_text, image_description):
     )
     
     # Extract and return the relevance score
-    relevance_score = float(response.choices[0].message.content.strip())
+    relevance_score = response.choices[0].message.content.strip()
+    
+    # Attempt to convert the relevance score to a float
+    try:
+        relevance_score = float(relevance_score)
+    except ValueError:
+        relevance_score = 0.0  # Default to 0 if parsing fails
+
     return relevance_score
 
 # Streamlit app layout
