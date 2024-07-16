@@ -1,6 +1,6 @@
 # Image Description using GPT-4o
 
-This project is a Streamlit web application that uses OpenAI's GPT-4o to generate descriptions for uploaded images.
+This project is a Streamlit web application that uses OpenAI's GPT-4o to generate descriptions for uploaded images and score the relevance with articles/news
 
 ## Features
 
@@ -12,7 +12,7 @@ This project is a Streamlit web application that uses OpenAI's GPT-4o to generat
 
 1. Clone the repository:
     ```bash
-    git clone https://github.com/OrenGrinker/gpt4oimage.git
+    git clone https://github.com/pabloguinea-enzyme/gpt4oimage.git
     cd gpt4oimage
     ```
 
