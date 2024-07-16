@@ -3,11 +3,17 @@ import streamlit as st
 from openai import OpenAI
 import base64
 from utils import get_image_description
-from difflib import SequenceMatcher
+from sentence_transformers import SentenceTransformer, util
 
-# Function to calculate similarity between two strings
-def calculate_similarity(a, b):
-    return SequenceMatcher(None, a, b).ratio()
+# Load the sentence transformer model
+model = SentenceTransformer('paraphrase-MiniLM-L6-v2')
+
+# Function to calculate semantic similarity between two texts
+def calculate_semantic_similarity(text1, text2):
+    embeddings1 = model.encode(text1, convert_to_tensor=True)
+    embeddings2 = model.encode(text2, convert_to_tensor=True)
+    similarity = util.pytorch_cos_sim(embeddings1, embeddings2)
+    return similarity.item()
 
 # Streamlit app layout
 st.title("Image Relevance to News Text using GPT-4o")
@@ -42,8 +48,8 @@ if api_key:
                 description = get_image_description(client, uploaded_file, prompt="Describe the image.")
                 st.write(description)
 
-                # Calculate similarity between news text and image description
-                similarity = calculate_similarity(news_text, description)
+                # Calculate semantic similarity between news text and image description
+                similarity = calculate_semantic_similarity(news_text, description)
                 image_relevancies.append({
                     'similarity': similarity,
                     'image': uploaded_file,
