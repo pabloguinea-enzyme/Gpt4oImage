@@ -3,17 +3,22 @@ import streamlit as st
 from openai import OpenAI
 import base64
 from utils import get_image_description
-from sentence_transformers import SentenceTransformer, util
 
-# Load the sentence transformer model
-model = SentenceTransformer('paraphrase-MiniLM-L6-v2')
-
-# Function to calculate semantic similarity between two texts
-def calculate_semantic_similarity(text1, text2):
-    embeddings1 = model.encode(text1, convert_to_tensor=True)
-    embeddings2 = model.encode(text2, convert_to_tensor=True)
-    similarity = util.pytorch_cos_sim(embeddings1, embeddings2)
-    return similarity.item()
+# Function to calculate relevance between news text and image description using GPT-4o
+def calculate_relevance(client, news_text, image_description):
+    prompt = f"Given the news text: '{news_text}', rate the relevance of the following image description on a scale from 0 to 1. Image description: '{image_description}'"
+    
+    response = client.chat.completions.create(
+        model="gpt-4o",
+        messages=[
+            {"role": "user", "content": prompt}
+        ],
+        max_tokens=10
+    )
+    
+    # Extract and return the relevance score
+    relevance_score = float(response.choices[0].message.content.strip())
+    return relevance_score
 
 # Streamlit app layout
 st.title("Image Relevance to News Text using GPT-4o")
@@ -35,7 +40,7 @@ if api_key:
     uploaded_files = st.file_uploader("Choose images...", type=["jpg", "jpeg", "png"], accept_multiple_files=True)
 
     if news_text and uploaded_files:
-        # Store descriptions and similarity scores
+        # Store descriptions and relevance scores
         image_relevancies = []
 
         for uploaded_file in uploaded_files:
@@ -48,10 +53,10 @@ if api_key:
                 description = get_image_description(client, uploaded_file, prompt="Describe the image.")
                 st.write(description)
 
-                # Calculate semantic similarity between news text and image description
-                similarity = calculate_semantic_similarity(news_text, description)
+                # Calculate relevance between news text and image description
+                relevance = calculate_relevance(client, news_text, description)
                 image_relevancies.append({
-                    'similarity': similarity,
+                    'relevance': relevance,
                     'image': uploaded_file,
                     'description': description
                 })
@@ -59,11 +64,11 @@ if api_key:
                 st.error(f"Error: {e}")
 
         # Sort images by relevance
-        image_relevancies = sorted(image_relevancies, key=lambda x: x['similarity'], reverse=True)
+        image_relevancies = sorted(image_relevancies, key=lambda x: x['relevance'], reverse=True)
 
         st.write("Relevant Images:")
         for item in image_relevancies:
-            st.image(item['image'], caption=f"Description: {item['description']} (Similarity: {item['similarity']:.2f})", use_column_width=True)
+            st.image(item['image'], caption=f"Description: {item['description']} (Relevance: {item['relevance']:.2f})", use_column_width=True)
 else:
     st.error("Please provide a valid OpenAI API key.")
 
