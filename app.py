@@ -2,6 +2,7 @@ import os
 import streamlit as st
 from openai import OpenAI
 import base64
+from utils import get_image_description
 
 # Streamlit app layout
 st.title("Image Description using GPT-4o")
