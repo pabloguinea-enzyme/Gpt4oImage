@@ -2,7 +2,6 @@ import os
 import streamlit as st
 from openai import OpenAI
 import base64
-from utils import get_image_description, summarize_text, detect_language, translate_text
 
 # Function to calculate relevance between news text and image description using GPT-4o
 def calculate_relevance(client, news_text, image_description):
